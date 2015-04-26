@@ -1,0 +1,19 @@
+<ion-view view-title="Articles">
+  <ion-content>
+    <ion-list>
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="article in articles"
+                type="item-text-wrap" href="#/tab/articles/{{article.id}}">
+        <img ng-src="{{article.image}}">
+
+        <h2>{{article.title}}</h2>
+
+        <p>{{article.description}}</p>
+        <i class="icon ion-chevron-right icon-accessory"></i>
+
+        <!--<ion-option-button class="button-assertive" ng-click="remove(chat)">-->
+        <!--Delete-->
+        <!--</ion-option-button>-->
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>
