@@ -26,7 +26,7 @@ import com.tangobyte.yazarlar.utils.StringUtils;
 @Component
 public class SozcuCrawler extends BaseCrawler{
 
-    private static final String NEWSPAPER_NAME = "Sözcü";
+    private static final String NEWSPAPER_NAME = "SÃ¶zcÃ¼";
     @Async
     @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 1)
     public void getArticles() {

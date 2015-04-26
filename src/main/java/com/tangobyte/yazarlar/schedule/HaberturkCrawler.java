@@ -27,7 +27,7 @@ import com.tangobyte.yazarlar.utils.StringUtils;
 public class HaberturkCrawler extends BaseCrawler {
 
 
-    private static final String NEWSPAPER_NAME = "Habertürk";
+    private static final String NEWSPAPER_NAME = "HabertÃ¼rk";
 
     @Async
     @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 1)

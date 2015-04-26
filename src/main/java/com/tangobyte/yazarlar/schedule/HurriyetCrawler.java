@@ -41,7 +41,7 @@ import com.tangobyte.yazarlar.utils.StringUtils;
 @Component
 public class HurriyetCrawler extends BaseCrawler{
 
-    private static final String NEWSPAPER_NAME = "Hürriyet";
+    private static final String NEWSPAPER_NAME = "HÃ¼rriyet";
     @Async
     @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 1)
     public void getArticles() {
