@@ -1,6 +1,9 @@
 package com.tangobyte.yazarlar.schedule;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -31,9 +34,9 @@ public class MilliyetCrawler extends BaseCrawler {
 		RSSFeedParser parser = new RSSFeedParser(
 				"http://www.milliyet.com.tr/D/rss/rss/RssY.xml");
 		Feed feed = parser.readFeed();
-		// System.out.println(feed);
+		// // System.out.println(feed);
 		for (FeedMessage message : feed.getMessages()) {
-			System.out.println(message.getLink());
+			// System.out.println(message.getLink());
 			Document doc = null;
 			try {
 				doc = Jsoup.connect(message.getLink()).get();
@@ -49,14 +52,14 @@ public class MilliyetCrawler extends BaseCrawler {
 				Elements newsHeadlines = doc.select(".detayTop").select(
 						".current");
 				String yazar = newsHeadlines.get(0).text().trim();
-				System.out.println("Yazar : " + yazar);
+				// System.out.println("Yazar : " + yazar);
 				Author author = authorService.getAuthorByName(yazar);
 				if(author == null) {
 					author = new Author();
 					author.setName(yazar);
 					Element image = doc.select(".yazarBox").select("img").first();
 					String imageUrl = image.absUrl("src");
-					System.out.println("url = " + imageUrl);
+					// System.out.println("url = " + imageUrl);
 					String imageName = System.currentTimeMillis() + ".jpg";
 					
 					if(author.getImageUrl() == null) {
@@ -74,25 +77,28 @@ public class MilliyetCrawler extends BaseCrawler {
 				article.setAuthor(author);
 				article.setTitle(baslik);
 
-				System.out.println("baslik = " + baslik);
+				// System.out.println("baslik = " + baslik);
 
-				System.out.println("Date : " + doc.select(".date"));
+				// System.out.println("Date : " + doc.select(".date"));
 				
 				String publishDate = doc.select(".date").get(0).text().trim();
-				article.setPublishDate(publishDate);
+				SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+		        Date parse = sdf.parse(publishDate.substring(0, 10));
+				article.setPublishDate(parse);
 
 				String icerik = doc.select("#divAdnetKeyword3").get(0).html()
 						.trim();
-				// System.out.println("icerik = " + icerik);
+				// // System.out.println("icerik = " + icerik);
 				icerik = StringUtils.clean(icerik);
-				// System.out.println("clean icerik = " + icerik);
+				// // System.out.println("clean icerik = " + icerik);
 				article.setContent(icerik);
 
 				articleService.saveOrUpdateArticle(article);
 			} catch (Exception e) {
-				System.out.println(message.getLink() + " hata : "
+				 System.out.println(message.getLink() + " hata : "
 						+ e.getMessage());
 			}
 		}
 	}
+	
 }

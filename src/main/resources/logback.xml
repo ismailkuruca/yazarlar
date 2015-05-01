@@ -17,10 +17,12 @@
 	</appender>
 
 	<!-- project default level -->
-	<logger name="com.spr" level="INFO" />
+	<logger name="com.tangobyte" level="ERROR" />
 
 	<!--log4jdbc -->
 	<logger name="jdbc.sqltiming" level="INFO"/>
+	
+	<logger name="com.gargoylesoftware.htmlunit" level="ERROR"/>
 
 	<root level="WARN">
 		<appender-ref ref="console" />

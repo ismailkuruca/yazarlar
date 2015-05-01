@@ -34,9 +34,9 @@ public class SabahCrawler extends BaseCrawler{
 
         RSSFeedParser parser = new RSSFeedParser("http://www.sabah.com.tr/rss/yazarlar.xml");
         Feed feed = parser.readFeed();
-        //System.out.println(feed);
+        //// System.out.println(feed);
         for (FeedMessage message : feed.getMessages()) {
-            System.out.println(message.getLink());
+            // System.out.println(message.getLink());
             Document doc = null;
             try {
                 doc = Jsoup.connect(message.getLink()).get();
@@ -52,10 +52,10 @@ public class SabahCrawler extends BaseCrawler{
 
                 Element newsHeadlines = doc.select(".yazarList").select("strong").first();
                 yazar = newsHeadlines.text().trim();
-                System.out.println("Yazar : " + yazar);
+                // System.out.println("Yazar : " + yazar);
 
                 baslik =  doc.select(".yazarList").select("h1").first().text().trim();
-                System.out.println("baslik = " + baslik);
+                // System.out.println("baslik = " + baslik);
 
                 Author author = authorService.getAuthorByName(yazar);
                 if(author == null) {
@@ -65,8 +65,10 @@ public class SabahCrawler extends BaseCrawler{
                     String imageUrl = image.absUrl("src");
                     imageUrl = imageUrl.substring(0,imageUrl.indexOf("?"));
 
-                    System.out.println("gelen url = " + imageUrl);
+                    // System.out.println("gelen url = " + imageUrl);
 
+                    author.setNewspaper(newspaper);
+                    author = authorService.saveOrUpdateAuthor(author);
 
                     String imageName = System.currentTimeMillis() + ".jpg";
                     if(author.getImageUrl() == null) {
@@ -77,13 +79,11 @@ public class SabahCrawler extends BaseCrawler{
                         }
                         author.setImageUrl(imageName);
                     }
-                    author.setNewspaper(newspaper);
-                    author = authorService.saveOrUpdateAuthor(author);
                 }
-                
+                article.setAuthor(author);
                 try {
                     tarih = doc.select(".date").get(0).text().trim();
-                    System.out.println(tarih);
+                    // System.out.println(tarih);
                 }catch (Exception e) {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
                     tarih = sdf.format(new Date());
@@ -93,18 +93,18 @@ public class SabahCrawler extends BaseCrawler{
 
 
                 icerik = doc.select(".txtIn").select("article").get(0).html().trim();
-                //System.out.println("icerik = " + icerik);
+                //// System.out.println("icerik = " + icerik);
                 icerik = StringUtils.clean(icerik);
-                System.out.println("clean icerik = " + icerik);
+                // System.out.println("clean icerik = " + icerik);
 
                 article.setTitle(baslik);
-                article.setPublishDate(tarih);
+                article.setPublishDate(new Date());
                 article.setContent(icerik);
 
                 articleService.saveOrUpdateArticle(article);
 
             }catch (Exception e) {
-                System.out.println(message.getLink() + " hata : " + e.getMessage());
+                // System.out.println(message.getLink() + " hata : " + e.getMessage());
             }
             //break;
         }

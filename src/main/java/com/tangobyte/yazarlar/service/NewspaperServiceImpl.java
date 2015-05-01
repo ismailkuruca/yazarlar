@@ -1,7 +1,9 @@
 package com.tangobyte.yazarlar.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -15,7 +17,14 @@ public class NewspaperServiceImpl implements NewspaperService{
 	
 	@Resource
 	private NewspaperRepository newspaperRepository;
+	
+	private static List<Newspaper> cache = new ArrayList<Newspaper>();
 
+	@PostConstruct
+	void init() {
+	    cache = newspaperRepository.findAll();;
+	}
+	
 	@Override
 	public Newspaper getNewspaperById(Long id) {
 		return newspaperRepository.findOne(id);
@@ -23,7 +32,7 @@ public class NewspaperServiceImpl implements NewspaperService{
 
 	@Override
 	public List<Newspaper> getAllNewspapers() {
-		return newspaperRepository.findAll();
+		return cache;
 	}
 
 	@Override

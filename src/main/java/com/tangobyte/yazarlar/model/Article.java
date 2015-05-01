@@ -31,7 +31,7 @@ public class Article {
 	private String content;
 	
 	@Column(name = "publish_date")
-	private String publishDate;
+	private Date publishDate;
 
 	@Column(name = "create_date")
 	private Date createDate;
@@ -66,12 +66,12 @@ public class Article {
 		this.content = content;
 	}
 
-	public String getPublishDate() {
+	public Date getPublishDate() {
 		return publishDate;
 	}
 
-	public void setPublishDate(String publishDate) {
-		this.publishDate = publishDate;
+	public void setPublishDate(Date parse) {
+		this.publishDate = parse;
 	}
 
 	public Date getCreateDate() {

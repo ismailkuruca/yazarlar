@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang3.LocaleUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -35,9 +36,9 @@ public class TarafCrawler extends BaseCrawler{
                 new RSSFeedParser(
                         "http://pipes.yahoo.com/pipes/pipe.run?_id=6cf5bd9e2c0fa25c618a3a578a648c60&_render=rss");
         Feed feed = parser.readFeed();
-        // System.out.println(feed);
+        // // System.out.println(feed);
         for (FeedMessage message : feed.getMessages()) {
-            System.out.println(message.getLink());
+            // System.out.println(message.getLink());
             Document doc = null;
             try {
                 doc = Jsoup.connect(message.getLink()).get();
@@ -48,18 +49,22 @@ public class TarafCrawler extends BaseCrawler{
             try {
                 String yazar = doc.select("div.vcard.author > strong > a").get(0).text().trim();
 //                news.setNewsHeading(yazar);
-                System.out.println("yazar = " + yazar); 
+                // System.out.println("yazar = " + yazar); 
                 String baslik = doc.select(".name.post-title.entry-title > span").get(0).text().trim();
 
                 String tarih = "";
                 try {
                     tarih = doc.select(".post-meta").select("span").get(0).text().trim();
-                    System.out.println(tarih);
+                    // System.out.println(tarih);
                 } catch (Exception e) {
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
                     tarih = sdf.format(new Date());
                 }
-                article.setPublishDate(tarih);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd.MMMM.yyyy", LocaleUtils.toLocale("tr_TR"));
+                String[] split = tarih.split(" ");
+                String join = (split[0] + "." + split[1] + "." + split[2]);
+                Date parse = sdf.parse(join);
+                article.setPublishDate(parse);
 
                 Author author = authorService.getAuthorByName(yazar);
                 if(author == null) {
@@ -69,7 +74,7 @@ public class TarafCrawler extends BaseCrawler{
                     String imageUrl = image.absUrl("src");
                     imageUrl = imageUrl.substring(0, imageUrl.indexOf("?"));
 
-                    System.out.println("gelen url = " + imageUrl);
+                    // System.out.println("gelen url = " + imageUrl);
                     String imageName = System.currentTimeMillis() + ".jpg";
                    
                     if(author.getImageUrl() == null) {
@@ -86,11 +91,11 @@ public class TarafCrawler extends BaseCrawler{
                 article.setAuthor(author);
                 article.setTitle(baslik);
                 String icerik = doc.select(".post-inner").select("div").first().html();
-                // System.out.println("icerik = " + icerik);
+                // // System.out.println("icerik = " + icerik);
                 icerik = StringUtils.clean(icerik);
 
                 icerik = icerik.substring(icerik.indexOf("</p>") + 4, icerik.length());
-                System.out.println("clean icerik = " + icerik);
+                // System.out.println("clean icerik = " + icerik);
 
 
 
@@ -99,7 +104,7 @@ public class TarafCrawler extends BaseCrawler{
                 articleService.saveOrUpdateArticle(article);
 
             } catch (Exception e) {
-                System.out.println(message.getLink() + " hata : " + e.getMessage());
+                // System.out.println(message.getLink() + " hata : " + e.getMessage());
                 e.printStackTrace();
 
             }

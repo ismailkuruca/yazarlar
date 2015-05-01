@@ -7,7 +7,7 @@ angular.module('starter.services', [])
 
         return {
             getAuthorsByNewspaperId: function (newspaperId) {
-                promise = $http.get('http://localhost:8080/yazarlar-be/getAuthorsByNewspaperId' + '?id=' + newspaperId).then(
+                promise = $http.get('http://188.166.97.48:8080/yazarlar/getAuthorsByNewspaperId' + '?id=' + newspaperId, {cache: true}).then(
                     function (response) {
                         last_request_failed = false;
                         authors = response.data;
@@ -37,7 +37,7 @@ angular.module('starter.services', [])
         return {
             all: function () {
                 if (!promise || last_request_failed) {
-                    promise = $http.get('http://localhost:8080/yazarlar-be/getNewspapers', {cache: true}).then(
+                    promise = $http.get('http://188.166.97.48:8080/yazarlar/getNewspapers', {cache: true}).then(
                         function (response) {
                             last_request_failed = false;
                             newspapers = response.data;
@@ -67,7 +67,7 @@ angular.module('starter.services', [])
 
         return {
             getByAuthorId: function (authorId) {
-                promise = $http.get('http://localhost:8080/yazarlar-be/getArticlesByAuthorId' + '?id=' + authorId).then(
+                promise = $http.get('http://188.166.97.48:8080/yazarlar/getArticlesByAuthorId' + '?id=' + authorId).then(
                     function (response) {
                         last_request_failed = false;
                         articles = response.data;

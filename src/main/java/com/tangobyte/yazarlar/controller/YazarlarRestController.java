@@ -1,7 +1,13 @@
 package com.tangobyte.yazarlar.controller;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +35,6 @@ public class YazarlarRestController {
 	@Autowired
 	private ArticleService articleService;
 	
-	
 	@RequestMapping(value = "/getNewspapers", method = RequestMethod.GET, produces="application/json;charset=UTF-8")
 	public @ResponseBody List<Newspaper> getNewspapers() {
 		List<Newspaper> allNewspapers = newspaperService.getAllNewspapers();
@@ -45,6 +50,12 @@ public class YazarlarRestController {
 	@RequestMapping(value = "/getArticlesByAuthorId", method = RequestMethod.GET, produces="application/json;charset=UTF-8")
 	public @ResponseBody List<Article> getArticlesByAuthorId(@RequestParam("id") Long id) {
 		List<Article> allArticlesByAuthorId = articleService.getAllArticlesByAuthorId(id);
+		Collections.sort(allArticlesByAuthorId, new Comparator<Article>() {
+
+            @Override
+            public int compare(Article o1, Article o2) {
+                return o2.getPublishDate().compareTo(o1.getPublishDate());
+            }});
 		return allArticlesByAuthorId;
 	}
 	

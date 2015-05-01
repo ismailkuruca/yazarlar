@@ -18,6 +18,27 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
                 // org.apache.cordova.statusbar required
                 StatusBar.styleLightContent();
             }
+            if(window.plugins && window.plugins.AdMob) {
+                var admob_key = "ca-app-pub-9258778632843530/5511466350";
+                var admob = window.plugins.AdMob;
+                admob.createBannerView(
+                    {
+                        'publisherId': admob_key,
+                        'adSize': admob.AD_SIZE.BANNER,
+                        'bannerAtTop': false
+                    },
+                    function() {
+                        admob.requestAd(
+                            { 'isTesting': false },
+                            function() {
+                                admob.showAd(true);
+                            },
+                            function() { console.log('failed to request ad'); }
+                        );
+                    },
+                    function() { console.log('failed to create banner view'); }
+                );
+            }
         });
     })
 
@@ -29,67 +50,38 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         $stateProvider
 
             // setup an abstract state for the tabs directive
-            .state('tab', {
-                url: "/tab",
-                abstract: true,
-                templateUrl: "templates/tabs.html"
-            })
+            //.state('tab', {
+            //    url: "/tab",
+            //    abstract: true,
+            //    templateUrl: "templates/tabs.html"
+            //})
 
             // Each tab has its own nav history stack:
 
-            .state('tab.newspapers', {
+            .state('newspapers', {
                 url: '/newspapers',
-                views: {
-                    'tab-newspapers': {
-                        templateUrl: 'templates/tab-newspapers.html',
-                        controller: 'NewspaperController'
-                    }
-                }
+                templateUrl: 'templates/newspapers.html',
+                controller: 'NewspaperController'
             })
-            .state('tab.newspapers-detail', {
+            .state('newspapers-detail', {
                 url: '/newspapers/:newspaperId',
-                views: {
-                    'tab-newspapers': {
-                        templateUrl: 'templates/newspaper-detail.html',
-                        controller: 'NewspaperDetailController'
-                    }
-                }
+                templateUrl: 'templates/newspaper-detail.html',
+                controller: 'NewspaperDetailController'
             })
-
-            //.state('tab.newspapers.authors', {
-            //    url: '/authors',
-            //    views: {
-            //        'tab-authors': {
-            //            templateUrl: 'templates/tab-authors.html',
-            //            controller: 'AuthorController'
-            //        }
-            //    }
-            //})
-
-            .state('tab.author-detail', {
+            .state('author-detail', {
                 url: '/authors/:authorId',
-                views: {
-                    'tab-newspapers': {
-                        templateUrl: 'templates/author-detail.html',
-                        controller: 'AuthorDetailController'
-                    }
-                },
                 templateUrl: 'templates/author-detail.html',
                 controller: 'AuthorDetailController'
             })
 
-            .state('tab.article-detail', {
+            .state('article-detail', {
                 url: '/articles/:articleId',
-                views: {
-                    'tab-newspapers': {
-                        templateUrl: 'templates/article-detail.html',
-                        controller: 'ArticleController',
-                    }
-                }
+                templateUrl: 'templates/article-detail.html',
+                controller: 'ArticleController'
             })
         ;
 
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/tab/newspapers');
+        $urlRouterProvider.otherwise('/newspapers');
 
     });

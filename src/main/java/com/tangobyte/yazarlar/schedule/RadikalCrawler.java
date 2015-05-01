@@ -35,9 +35,9 @@ public class RadikalCrawler extends BaseCrawler {
 
         RSSFeedParser parser = new RSSFeedParser("http://www.radikal.com.tr/d/rss/RssYazarlar.xml");
         Feed feed = parser.readFeed();
-        // System.out.println(feed);
+        // // System.out.println(feed);
         for (FeedMessage message : feed.getMessages()) {
-            System.out.println(message.getLink());
+            // System.out.println(message.getLink());
             Document doc = null;
             try {
                 doc = Jsoup.connect(message.getLink()).get();
@@ -53,14 +53,14 @@ public class RadikalCrawler extends BaseCrawler {
 
                 Element newsHeadlines = doc.select(".author-content-writer").select("h3").first();
                 yazar = newsHeadlines.text().trim();
-                System.out.println("Yazar : " + yazar);
+                // System.out.println("Yazar : " + yazar);
                 Author author = authorService.getAuthorByName(yazar);
                 if(author == null) {
                     author = new Author();
                     author.setName(yazar);
                     Element image = doc.select(".author-content-writer").select("img").first();
                     String imageUrl = image.absUrl("src");
-                    System.out.println("gelen url = " + imageUrl);
+                    // System.out.println("gelen url = " + imageUrl);
                     String imageName = System.currentTimeMillis() + ".jpg";
 
                     try {
@@ -74,13 +74,13 @@ public class RadikalCrawler extends BaseCrawler {
                 }
                 article.setAuthor(author);
                 baslik = doc.select(".author-content-text").select("h1").first().text().trim();
-                System.out.println("baslik = " + baslik);
+                // System.out.println("baslik = " + baslik);
                 
                 article.setTitle(baslik);
 
                 try {
                     tarih = doc.select(".date").get(0).text().trim();
-                    System.out.println(tarih);
+                    // System.out.println(tarih);
                 } catch (Exception e) {
                     e.printStackTrace();
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
@@ -88,16 +88,17 @@ public class RadikalCrawler extends BaseCrawler {
 
 
                 }
-
-                article.setPublishDate(tarih);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                Date parse = sdf.parse(tarih);
+                article.setPublishDate(parse);
                 icerik = doc.select(".text-area").select("h6").first().html().trim();
-                // System.out.println("icerik = " + icerik);
+                // // System.out.println("icerik = " + icerik);
                 icerik = StringUtils.clean(icerik);
-                System.out.println("clean icerik = " + icerik);
+                // System.out.println("clean icerik = " + icerik);
 
                 
                 String icerik2 = doc.select("#metin2").html().trim();
-                // System.out.println("clean icerik2 = " + icerik2);
+                // // System.out.println("clean icerik2 = " + icerik2);
                 icerik2 = StringUtils.clean(icerik2);
 
                 article.setContent("<b>" + icerik + "</b>" + icerik2);
@@ -106,7 +107,7 @@ public class RadikalCrawler extends BaseCrawler {
 
 
             } catch (Exception e) {
-                System.out.println(message.getLink() + " hata : " + e.getMessage());
+                // System.out.println(message.getLink() + " hata : " + e.getMessage());
             }
 
         }

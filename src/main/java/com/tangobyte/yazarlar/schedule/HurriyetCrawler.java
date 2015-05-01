@@ -1,10 +1,13 @@
 package com.tangobyte.yazarlar.schedule;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -27,9 +30,9 @@ import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.tangobyte.yazarlar.model.Newspaper;
 import com.tangobyte.yazarlar.model.Article;
 import com.tangobyte.yazarlar.model.Author;
+import com.tangobyte.yazarlar.model.Newspaper;
 import com.tangobyte.yazarlar.rss.Feed;
 import com.tangobyte.yazarlar.rss.FeedMessage;
 import com.tangobyte.yazarlar.rss.RSSFeedParser;
@@ -43,10 +46,11 @@ public class HurriyetCrawler extends BaseCrawler{
 
     private static final String NEWSPAPER_NAME = "Hürriyet";
     @Async
-    @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 1)
+    @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 5 * 60 * 1000)
     public void getArticles() {
         Newspaper newspaper = newspaperService.getNewspaperByTitle(NEWSPAPER_NAME);
         LogManager.getLogManager().reset();
+        Logger.getLogger("com.gargoylesoftware.htmlunit").setLevel(java.util.logging.Level.SEVERE);
         RSSFeedParser parser = new RSSFeedParser("http://rss.hurriyet.com.tr/rss.aspx?sectionId=9");
         // g1405532@trbvm.com
         // deneme
@@ -78,6 +82,8 @@ public class HurriyetCrawler extends BaseCrawler{
             wc = new WebClient(BrowserVersion.CHROME);
             wc.getOptions().setCssEnabled(false);
             wc.getOptions().setJavaScriptEnabled(true);
+            wc.getOptions().setThrowExceptionOnScriptError(false);
+            wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
             wc.waitForBackgroundJavaScript(5000);
             wc.setAjaxController(new NicelyResynchronizingAjaxController());
             wc.getOptions().setUseInsecureSSL(true);
@@ -85,7 +91,7 @@ public class HurriyetCrawler extends BaseCrawler{
             
             Set<String> keySet = cookies.keySet();
             for (String s : keySet) {
-                System.out.println(s + " " + cookies.get(s));
+                // System.out.println(s + " " + cookies.get(s));
                 cm.addCookie(new Cookie("hurriyet.com.tr", s, cookies.get(s)));
             }
             
@@ -100,7 +106,7 @@ public class HurriyetCrawler extends BaseCrawler{
         }
 
         for (FeedMessage message : feed.getMessages()) {
-            System.out.println(message.getLink());
+            // System.out.println(message.getLink());
             ScriptResult spotText = null;
             ScriptResult content = null;
             ScriptResult postDate = null;
@@ -133,19 +139,21 @@ public class HurriyetCrawler extends BaseCrawler{
                 pubDate = pubDate.substring(0, pubDate.indexOf("T"));
                 String icerik = spotText.getJavaScriptResult().toString() + "<br/>" + content.getJavaScriptResult().toString();
 
-                System.out.println(message.getDate() + "---------->");
-                System.out.println("Yazar : " + message.getTitle());
+                // System.out.println(message.getDate() + "---------->");
+                // System.out.println("Yazar : " + message.getTitle());
                 article.setTitle(baslik);
-                article.setPublishDate(pubDate);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Date parse = sdf.parse(pubDate);
+                article.setPublishDate(parse);
 
                 icerik = StringUtils.clean(icerik);
-                System.out.println("clean icerik = " + icerik);
+                // System.out.println("clean icerik = " + icerik);
                 article.setContent(icerik);
 
                 articleService.saveOrUpdateArticle(article);
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println(message.getLink() + " hata : " + e.getMessage());
+                // System.out.println(message.getLink() + " hata : " + e.getMessage());
 
             }
         }

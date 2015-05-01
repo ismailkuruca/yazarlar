@@ -7,13 +7,16 @@ angular.module('starter.controllers', [])
         }
     })
 
-    .controller('AuthorDetailController', function ($scope, $stateParams, Authors, Articles) {
+    .controller('AuthorDetailController', function ($scope, $stateParams, Authors, Articles, $ionicLoading) {
+        $ionicLoading.show();
         $scope.author = Authors.get($stateParams.authorId);
         var articles = Articles.getByAuthorId($stateParams.authorId);
         articles.then(function(response) {
             $scope.articles = response;
+            $ionicLoading.hide();
         }, function(error) {
             console.log("AUTHOR_DETAIL_CONTROLLER PROMISE ERROR!!!");
+            $ionicLoading.hide();
         })
 
     })
@@ -27,13 +30,16 @@ angular.module('starter.controllers', [])
         })
     })
 
-    .controller('NewspaperDetailController', function ($scope, $stateParams, Authors, Newspapers) {
+    .controller('NewspaperDetailController', function ($scope, $stateParams, Authors, Newspapers, $ionicLoading) {
+        $ionicLoading.show();
         $scope.newspaper = Newspapers.get($stateParams.newspaperId);
         var authors = Authors.getAuthorsByNewspaperId($stateParams.newspaperId);
         authors.then(function(response) {
             $scope.authors = response;
+            $ionicLoading.hide();
         }, function(error) {
             console.log("NEWSPAPER_DETAIL_CONTROLLER PROMISE ERROR!!!");
+            $ionicLoading.hide();
         })
     })
 

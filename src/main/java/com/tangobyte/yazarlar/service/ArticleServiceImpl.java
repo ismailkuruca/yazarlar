@@ -1,7 +1,10 @@
 package com.tangobyte.yazarlar.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -18,7 +21,17 @@ public class ArticleServiceImpl implements ArticleService{
 	private ArticleRepository articleRepository;
 	
 	@Resource
-	private AuthorRepository authorRepository;
+	private AuthorService authorService;
+	
+	private static ConcurrentHashMap<Long, List<Article>> cache = new ConcurrentHashMap<Long, List<Article>>();
+	
+    @PostConstruct
+    void init() {
+        List<Author> allAuthors = authorService.getAllAuthors();
+        for(Author a : allAuthors) {
+            cache.put(a.getId(), articleRepository.getAllArticlesByAuthorId(a));
+        }
+    }
 	
 	@Override
 	public Article getArticleById(Long id) {
@@ -34,7 +47,15 @@ public class ArticleServiceImpl implements ArticleService{
 	public Article saveOrUpdateArticle(Article article) {
 	    List<Article> sameAuthorAndTitleExists = articleRepository.sameAuthorAndTitleExists(article.getTitle(), article.getAuthor());
 	    if(sameAuthorAndTitleExists.size() == 0) {
-	        return articleRepository.saveAndFlush(article);
+	        article.setContent(article.getContent().replaceAll("&#39;", "'"));
+	        article.setContent(article.getContent().replaceAll("&quot;", "\""));
+	        article.setTitle(article.getTitle().replaceAll("&#39;", "'"));
+	        article.setTitle(article.getTitle().replaceAll("&quot;", "\""));
+	        Article saveAndFlush = articleRepository.saveAndFlush(article);
+	        if(saveAndFlush != null) {
+	            cache.get(saveAndFlush.getAuthor().getId()).add(saveAndFlush);
+	            return saveAndFlush;
+	        }
 	    }
 	    return null;
 	}
@@ -46,8 +67,12 @@ public class ArticleServiceImpl implements ArticleService{
 
 	@Override
 	public List<Article> getAllArticlesByAuthorId(Long id) {
-	    Author findOne = authorRepository.findOne(id);
-		return articleRepository.getAllArticlesByAuthorId(findOne);
+	    if(!cache.contains(id)) {
+	        Author authorById = authorService.getAuthorById(id);
+	        cache.put(id, articleRepository.getAllArticlesByAuthorId(authorById));
+	    }
+	    
+	    return cache.get(id);
 	}
 
 }

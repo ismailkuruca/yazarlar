@@ -1,9 +1,11 @@
 package com.tangobyte.yazarlar.schedule;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.commons.lang3.LocaleUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,9 +40,9 @@ public class HaberturkCrawler extends BaseCrawler {
                 new RSSFeedParser(
                         "http://pipes.yahoo.com/pipes/pipe.run?_id=3a33a688bacf72ed688c931cf7c4572a&_render=rss");
         Feed feed = parser.readFeed();
-        // System.out.println(feed);
+        // // System.out.println(feed);
         for (FeedMessage message : feed.getMessages()) {
-            System.out.println(message.getLink());
+            // System.out.println(message.getLink());
             Document doc = null;
             try {
                 doc = Jsoup.connect(message.getLink()).get();
@@ -54,20 +56,23 @@ public class HaberturkCrawler extends BaseCrawler {
                 String tarih = "";
                 String icerik = "";
 
-                System.out.println(message.getDate() + "---------->");
-                System.out.println("Yazar : " + message.getTitle());
+                // System.out.println(message.getDate() + "---------->");
+                // System.out.println("Yazar : " + message.getTitle());
                 article.setTitle(baslik);
 
                 Element newsHeadlines = doc.select(".news-date-create").select("span").first();
                 try {
                     tarih = newsHeadlines.text().trim();
-                    System.out.println(tarih);
+                    // System.out.println(tarih);
                 } catch (Exception e) {
                     e.printStackTrace();
                     SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
                     tarih = sdf.format(new Date());
                 }
-                article.setPublishDate(tarih);
+                SimpleDateFormat sdf = new SimpleDateFormat("dd.MMMM.yyyy", LocaleUtils.toLocale("tr_TR"));
+                String[] split = tarih.split(" ");
+                Date parse = sdf.parse(split[0] + "." + split[1] + "." + split[2]);
+                article.setPublishDate(parse);
 
                 Author author = authorService.getAuthorByName(yazar);
                 if (author == null) {
@@ -76,12 +81,12 @@ public class HaberturkCrawler extends BaseCrawler {
                     Element image = doc.select(".author-image").select("img").first();
                     String imageUrl = image.absUrl("src");
 
-                    System.out.println("gelen url = " + imageUrl);
+                    // System.out.println("gelen url = " + imageUrl);
                     String imageName = System.currentTimeMillis() + ".jpg";
                     try {
                         imageUrl = imageUrl.substring(0, imageUrl.indexOf("?"));
                     } catch (Exception e) {
-                        System.out.println("image da soru isareti yok");
+                        // System.out.println("image da soru isareti yok");
                     }
 
                     if (author.getImageUrl() == null) {
@@ -100,9 +105,9 @@ public class HaberturkCrawler extends BaseCrawler {
 
 
                 icerik = doc.select(".news-content-text").first().html().trim();
-                // System.out.println("icerik = " + icerik);
+                // // System.out.println("icerik = " + icerik);
                 icerik = StringUtils.clean(icerik);
-                System.out.println("clean icerik = " + icerik);
+                // System.out.println("clean icerik = " + icerik);
                 article.setContent(icerik);
 
                 articleService.saveOrUpdateArticle(article);
@@ -110,12 +115,11 @@ public class HaberturkCrawler extends BaseCrawler {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println(message.getLink() + " hata : " + e.getMessage());
+                // System.out.println(message.getLink() + " hata : " + e.getMessage());
 
             }
 
         }
 
     }
-
 }

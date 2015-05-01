@@ -1,7 +1,9 @@
 package com.tangobyte.yazarlar.service;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -18,7 +20,17 @@ public class AuthorServiceImpl implements AuthorService {
 	private AuthorRepository authorRepository;
 	
 	@Resource
-	private NewspaperRepository newspaperRepository;
+	private NewspaperService newspaperService;
+	
+	private static ConcurrentHashMap<Long, List<Author>> cache = new ConcurrentHashMap<Long, List<Author>>();
+	
+	@PostConstruct
+	void init() {
+	    List<Newspaper> allNewspapers = newspaperService.getAllNewspapers();
+	    for(Newspaper n : allNewspapers) {
+	        cache.put(n.getId(), authorRepository.getAllAuthorsByNewspaperId(n));
+	    }
+	}
 
 	@Override
 	public Author getAuthorById(Long id) {
@@ -32,7 +44,11 @@ public class AuthorServiceImpl implements AuthorService {
 
 	@Override
 	public Author saveOrUpdateAuthor(Author author) {
-		return authorRepository.saveAndFlush(author);
+		Author saveAndFlush = authorRepository.saveAndFlush(author);
+		if(saveAndFlush != null) {
+		    cache.get(author.getNewspaper().getId()).add(saveAndFlush);
+		}
+		return saveAndFlush;
 	}
 
 	@Override
@@ -42,8 +58,7 @@ public class AuthorServiceImpl implements AuthorService {
 
 	@Override
 	public List<Author> getAllAuthorsByNewspaperId(Long id) {
-	    Newspaper findOne = newspaperRepository.findOne(id);
-		return authorRepository.getAllAuthorsByNewspaperId(findOne);
+	    return cache.get(id);
 	}
 
 	@Override
