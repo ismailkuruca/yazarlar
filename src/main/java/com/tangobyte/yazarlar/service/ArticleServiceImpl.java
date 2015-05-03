@@ -1,6 +1,7 @@
 package com.tangobyte.yazarlar.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,8 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.tangobyte.yazarlar.model.Article;
 import com.tangobyte.yazarlar.model.Author;
@@ -99,6 +104,28 @@ public class ArticleServiceImpl implements ArticleService{
     @Override
     public void increaseViewCount(Long aid, Long id) {
         cache.get(aid).get(id).increaseViewCount();
+    }
+
+    @Override
+    public List<Article> getMostPopularArticles() {
+        PageRequest pr = new PageRequest(1, 10, Direction.DESC, "viewCount");
+        Page<Article> findAll = articleRepository.findAll(pr);
+        List<Article> resultSet = new ArrayList<Article>();
+        if(findAll != null) {
+            resultSet.addAll(findAll.getContent());
+        }
+        return resultSet;
+    }
+
+    @Override
+    public List<Article> getMostRecentArticles() {
+        PageRequest pr = new PageRequest(1, 10, Direction.DESC, "publishDate");
+        Page<Article> findAll = articleRepository.findAll(pr);
+        List<Article> resultSet = new ArrayList<Article>();
+        if(findAll != null) {
+            resultSet.addAll(findAll.getContent());
+        }
+        return resultSet;
     }
 
 

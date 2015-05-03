@@ -64,5 +64,17 @@ public class YazarlarRestController {
     public void getArticleById(@RequestParam("aid") Long aid, @RequestParam("id") Long id) {
         articleService.increaseViewCount(aid, id);
     }
+    
+    @RequestMapping(value = "/getMostPopular", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody List<Article> getMostPopular() {
+        List<Article> mostPopular = articleService.getMostPopularArticles();
+        return mostPopular;
+    }
+    
+    @RequestMapping(value = "/getMostRecent", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody List<Article> getMostRecent() {
+        List<Article> mostRecent = articleService.getMostRecentArticles();
+        return mostRecent;
+    }
 
 }

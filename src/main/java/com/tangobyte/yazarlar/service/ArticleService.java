@@ -17,4 +17,8 @@ public interface ArticleService {
 	public List<Article> getAllArticlesByAuthorId(Long id);
 
     public void increaseViewCount(Long aid, Long id);
+
+    public List<Article> getMostPopularArticles();
+
+    public List<Article> getMostRecentArticles();
 }
