@@ -66,6 +66,7 @@ public class ArticleServiceImpl implements ArticleService{
 	        article.setContent(article.getContent().replaceAll("&quot;", "\""));
 	        article.setTitle(article.getTitle().replaceAll("&#39;", "'"));
 	        article.setTitle(article.getTitle().replaceAll("&quot;", "\""));
+	        article.setViewCount(Long.valueOf(0));
 	        Article saveAndFlush = articleRepository.saveAndFlush(article);
 	        if(saveAndFlush != null) {
 	            cache.get(saveAndFlush.getAuthor().getId()).put(saveAndFlush.getId(), saveAndFlush);
