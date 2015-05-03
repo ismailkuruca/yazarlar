@@ -25,38 +25,44 @@ import com.tangobyte.yazarlar.service.AuthorService;
 
 @Controller
 public class YazarlarRestController {
-	
-	@Autowired
-	private AuthorService authorService;
-	
-	@Autowired
-	private NewspaperService newspaperService;
-	
-	@Autowired
-	private ArticleService articleService;
-	
-	@RequestMapping(value = "/getNewspapers", method = RequestMethod.GET, produces="application/json;charset=UTF-8")
-	public @ResponseBody List<Newspaper> getNewspapers() {
-		List<Newspaper> allNewspapers = newspaperService.getAllNewspapers();
-		return allNewspapers;
-	}
-	
-	@RequestMapping(value = "/getAuthorsByNewspaperId", method = RequestMethod.GET, produces="application/json;charset=UTF-8")
-	public @ResponseBody List<Author> getAuthorsByNewspaperId(@RequestParam("id") Long id) {
-		List<Author> allAuthorsByNewspaperId = authorService.getAllAuthorsByNewspaperId(id);
-		return allAuthorsByNewspaperId;
-	}
-	
-	@RequestMapping(value = "/getArticlesByAuthorId", method = RequestMethod.GET, produces="application/json;charset=UTF-8")
-	public @ResponseBody List<Article> getArticlesByAuthorId(@RequestParam("id") Long id) {
-		List<Article> allArticlesByAuthorId = articleService.getAllArticlesByAuthorId(id);
-		Collections.sort(allArticlesByAuthorId, new Comparator<Article>() {
+
+    @Autowired
+    private AuthorService authorService;
+
+    @Autowired
+    private NewspaperService newspaperService;
+
+    @Autowired
+    private ArticleService articleService;
+
+    @RequestMapping(value = "/getNewspapers", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody List<Newspaper> getNewspapers() {
+        List<Newspaper> allNewspapers = newspaperService.getAllNewspapers();
+        return allNewspapers;
+    }
+
+    @RequestMapping(value = "/getAuthorsByNewspaperId", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody List<Author> getAuthorsByNewspaperId(@RequestParam("id") Long id) {
+        List<Author> allAuthorsByNewspaperId = authorService.getAllAuthorsByNewspaperId(id);
+        return allAuthorsByNewspaperId;
+    }
+
+    @RequestMapping(value = "/getArticlesByAuthorId", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public @ResponseBody List<Article> getArticlesByAuthorId(@RequestParam("id") Long id) {
+        List<Article> allArticlesByAuthorId = articleService.getAllArticlesByAuthorId(id);
+        Collections.sort(allArticlesByAuthorId, new Comparator<Article>() {
 
             @Override
             public int compare(Article o1, Article o2) {
                 return o2.getPublishDate().compareTo(o1.getPublishDate());
-            }});
-		return allArticlesByAuthorId;
-	}
-	
+            }
+        });
+        return allArticlesByAuthorId;
+    }
+
+    @RequestMapping(value = "/getArticleById", method = RequestMethod.GET, produces = "application/json;charset=UTF-8")
+    public void getArticleById(@RequestParam("aid") Long aid, @RequestParam("id") Long id) {
+        articleService.increaseViewCount(aid, id);
+    }
+
 }

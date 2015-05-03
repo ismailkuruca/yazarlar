@@ -15,4 +15,6 @@ public interface ArticleService {
 	public void deleteArticle(Article author);
 	
 	public List<Article> getAllArticlesByAuthorId(Long id);
+
+    public void increaseViewCount(Long aid, Long id);
 }

@@ -41,6 +41,9 @@ public class Article {
 	
 	@Column
 	private String imageUrl;
+	
+	@Column
+	private Long viewCount;
 
 	public Long getId() {
 		return id;
@@ -115,5 +118,17 @@ public class Article {
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
 	}
+
+    public Long getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(Long viewCount) {
+        this.viewCount = viewCount;
+    }
+    
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
 
 }

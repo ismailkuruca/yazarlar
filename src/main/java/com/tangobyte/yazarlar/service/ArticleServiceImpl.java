@@ -2,11 +2,13 @@ package com.tangobyte.yazarlar.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.tangobyte.yazarlar.model.Article;
@@ -23,13 +25,26 @@ public class ArticleServiceImpl implements ArticleService{
 	@Resource
 	private AuthorService authorService;
 	
-	private static ConcurrentHashMap<Long, List<Article>> cache = new ConcurrentHashMap<Long, List<Article>>();
+	private static ConcurrentHashMap<Long, ConcurrentHashMap<Long, Article>> cache = new ConcurrentHashMap<Long, ConcurrentHashMap<Long, Article>>();
 	
     @PostConstruct
     void init() {
         List<Author> allAuthors = authorService.getAllAuthors();
         for(Author a : allAuthors) {
-            cache.put(a.getId(), articleRepository.getAllArticlesByAuthorId(a));
+            List<Article> allArticlesByAuthorId = articleRepository.getAllArticlesByAuthorId(a);
+            ConcurrentHashMap<Long, Article> map = new ConcurrentHashMap<Long, Article>();
+            for(Article art : allArticlesByAuthorId) {
+                map.put(art.getId(), art);
+            }
+            cache.put(a.getId(), map);
+        }
+    }
+    
+    @Scheduled(initialDelay = 30 * 60 * 1000, fixedDelay = 60 * 60 * 1000)
+    void updateViewCount() {
+        Set<Long> keySet = cache.keySet();
+        for(Long i : keySet) {
+            articleRepository.save(cache.get(i).values());
         }
     }
 	
@@ -53,7 +68,7 @@ public class ArticleServiceImpl implements ArticleService{
 	        article.setTitle(article.getTitle().replaceAll("&quot;", "\""));
 	        Article saveAndFlush = articleRepository.saveAndFlush(article);
 	        if(saveAndFlush != null) {
-	            cache.get(saveAndFlush.getAuthor().getId()).add(saveAndFlush);
+	            cache.get(saveAndFlush.getAuthor().getId()).put(saveAndFlush.getId(), saveAndFlush);
 	            return saveAndFlush;
 	        }
 	    }
@@ -69,10 +84,21 @@ public class ArticleServiceImpl implements ArticleService{
 	public List<Article> getAllArticlesByAuthorId(Long id) {
 	    if(!cache.contains(id)) {
 	        Author authorById = authorService.getAuthorById(id);
-	        cache.put(id, articleRepository.getAllArticlesByAuthorId(authorById));
+	        List<Article> allArticlesByAuthorId = articleRepository.getAllArticlesByAuthorId(authorById);
+	        ConcurrentHashMap<Long, Article> map = new ConcurrentHashMap<Long, Article>();
+	        for(Article a : allArticlesByAuthorId) {
+	            map.put(a.getId(), a);
+	        }
+	        cache.put(id, map);
 	    }
 	    
-	    return cache.get(id);
+	    return (List<Article>) cache.get(id).values();
 	}
+
+    @Override
+    public void increaseViewCount(Long aid, Long id) {
+        cache.get(aid).get(id).increaseViewCount();
+    }
+
 
 }
