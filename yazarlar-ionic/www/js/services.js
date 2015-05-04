@@ -78,9 +78,30 @@ angular.module('starter.services', [])
                     });
                 return promise;
             },
+            getMostPopular: function () {
+                promise = $http.get('http://188.166.97.48:8080/yazarlar/getMostPopular').then(
+                    function (response) {
+                        articles = response.data;
+                        return response.data;
+                    }, function (response) {
+                        return $q.reject(response);
+                    });
+                return promise;
+            },
+            getMostRecent: function () {
+                promise = $http.get('http://188.166.97.48:8080/yazarlar/getMostRecent').then(
+                    function (response) {
+                        articles = response.data;
+                        return response.data;
+                    }, function (response) {
+                        return $q.reject(response);
+                    });
+                return promise;
+            },
             get: function (articleId) {
                 for (var i = 0; i < articles.length; i++) {
                     if (articles[i].id === parseInt(articleId)) {
+                        $http.get('http://188.166.97.48:8080/yazarlar/getArticlesById' + '?aid=' + articles[i].author.id + '&id=' + articles[i].id);
                         return articles[i];
                     }
                 }

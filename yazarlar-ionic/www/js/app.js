@@ -49,39 +49,75 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         // Each state's controller can be found in controllers.js
         $stateProvider
 
-            // setup an abstract state for the tabs directive
-            //.state('tab', {
-            //    url: "/tab",
-            //    abstract: true,
-            //    templateUrl: "templates/tabs.html"
-            //})
+             //setup an abstract state for the tabs directive
+            .state('tab', {
+                url: "/tab",
+                abstract: true,
+                templateUrl: "templates/tabs.html"
+            })
 
             // Each tab has its own nav history stack:
 
-            .state('newspapers', {
-                url: '/newspapers',
-                templateUrl: 'templates/newspapers.html',
-                controller: 'NewspaperController'
-            })
-            .state('newspapers-detail', {
-                url: '/newspapers/:newspaperId',
-                templateUrl: 'templates/newspaper-detail.html',
-                controller: 'NewspaperDetailController'
-            })
-            .state('author-detail', {
-                url: '/authors/:authorId',
-                templateUrl: 'templates/author-detail.html',
-                controller: 'AuthorDetailController'
+            .state('tab.latest', {
+                url: '/latest',
+                views: {
+                    'latest-tab' : {
+                        templateUrl: 'templates/latest.html',
+                        controller: 'LatestController'
+                    }
+                }
             })
 
-            .state('article-detail', {
+            .state('tab.most', {
+                url: '/most',
+                views: {
+                    'most-tab' : {
+                        templateUrl: 'templates/most.html',
+                        controller: 'MostPopularController'
+                    }
+                }
+            })
+
+            .state('tab.default', {
+                url: '/newspapers',
+                views: {
+                    'default-tab' : {
+                        templateUrl: 'templates/newspapers.html',
+                        controller: 'NewspaperController'
+                    }
+                }
+            })
+            .state('tab.newspapers-detail', {
+                url: '/newspapers/:newspaperId',
+                views: {
+                    'default-tab' : {
+                        templateUrl: 'templates/newspaper-detail.html',
+                        controller: 'NewspaperDetailController'
+                    }
+                }
+            })
+            .state('tab.author-detail', {
+                url: '/authors/:authorId',
+                views: {
+                    'default-tab' : {
+                        templateUrl: 'templates/author-detail.html',
+                        controller: 'AuthorDetailController'
+                    }
+                }
+            })
+
+            .state('tab.article-detail', {
                 url: '/articles/:articleId',
-                templateUrl: 'templates/article-detail.html',
-                controller: 'ArticleController'
+                views: {
+                    'default-tab' : {
+                        templateUrl: 'templates/article-detail.html',
+                        controller: 'ArticleController'
+                    }
+                }
+
             })
         ;
-
         // if none of the above states are matched, use this as the fallback
-        $urlRouterProvider.otherwise('/newspapers');
+        $urlRouterProvider.otherwise('tab/newspapers');
 
     });
