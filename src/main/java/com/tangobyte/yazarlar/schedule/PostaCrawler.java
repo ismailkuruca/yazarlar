@@ -27,6 +27,7 @@ import com.tangobyte.yazarlar.utils.StringUtils;
 public class PostaCrawler extends BaseCrawler {
 
     private static final String NEWSPAPER_NAME = "Posta";
+
     @Async
     @Scheduled(fixedDelay = SCHEDULER_DELAY, initialDelay = 1)
     public void getArticles() {
@@ -48,8 +49,17 @@ public class PostaCrawler extends BaseCrawler {
                 Elements hTags = doc.select("h1, h2, h3, h4, h5, h6");
                 Elements h1Tags = hTags.select("h3");
                 String baslik = h1Tags.get(0).text().trim();
-                String yazar ="";
-                
+                String yazar = "";
+                Element image = doc.select(".kunye > a").select("img").first();
+                String imageUrl = image.absUrl("src");
+
+                // System.out.println("gelen url = " + imageUrl);
+                String imageName = System.currentTimeMillis() + ".jpg";
+                try {
+                    imageUrl = imageUrl.substring(0, imageUrl.indexOf("?"));
+                } catch (Exception e) {
+                    // System.out.println("image da soru isareti yok");
+                }
                 Element newsHeadlines = doc.select(".yazarDetCont").select("h1").first();
                 try {
                     baslik = newsHeadlines.text().trim();
@@ -58,11 +68,20 @@ public class PostaCrawler extends BaseCrawler {
                     yazar = newsHeadlines.text();
                 }
                 Author author = authorService.getAuthorByName(yazar);
-                if(author == null) {
+                if (author == null) {
                     author = new Author();
                     author.setName(yazar);
                     author.setNewspaper(newspaper);
                     author = authorService.saveOrUpdateAuthor(author);
+
+                    if (author.getImageUrl() == null) {
+                        try {
+                            ImageUtil.createImage(imageUrl, imageName, false);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        author.setImageUrl(imageName);
+                    }
                 }
                 article.setAuthor(author);
                 article.setTitle(baslik);
@@ -90,10 +109,9 @@ public class PostaCrawler extends BaseCrawler {
                 icerik = StringUtils.clean(icerik);
                 // // System.out.println("clean icerik = " + icerik);
                 article.setContent(icerik);
-                Element image = doc.select(".yImg").select("img").first();
 
 
-                
+
                 SimpleDateFormat sdf = new SimpleDateFormat("dd.MMM.yyyy", Locale.US);
                 tarih = message.getDate();
                 tarih = tarih.split(",")[1].trim();

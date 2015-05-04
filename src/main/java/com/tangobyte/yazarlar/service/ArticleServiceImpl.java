@@ -12,10 +12,12 @@ import javax.annotation.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 import com.tangobyte.yazarlar.model.Article;
 import com.tangobyte.yazarlar.model.Author;
 import com.tangobyte.yazarlar.repository.ArticleRepository;
@@ -45,11 +47,12 @@ public class ArticleServiceImpl implements ArticleService{
         }
     }
     
-    @Scheduled(initialDelay = 30 * 60 * 1000, fixedDelay = 60 * 60 * 1000)
+    @Scheduled(initialDelay = 5 * 60 * 1000, fixedDelay = 30 * 60 * 1000)
+    @Async
     void updateViewCount() {
         Set<Long> keySet = cache.keySet();
         for(Long i : keySet) {
-            articleRepository.save(cache.get(i).values());
+            articleRepository.save(CollectionUtils.arrayToList(cache.get(i).values().toArray()));
         }
     }
 	
@@ -74,6 +77,9 @@ public class ArticleServiceImpl implements ArticleService{
 	        article.setViewCount(Long.valueOf(0));
 	        Article saveAndFlush = articleRepository.saveAndFlush(article);
 	        if(saveAndFlush != null) {
+	            if(!cache.contains(saveAndFlush.getAuthor().getId())) {
+	                cache.put(saveAndFlush.getAuthor().getId(), new ConcurrentHashMap<Long, Article>());
+	            }
 	            cache.get(saveAndFlush.getAuthor().getId()).put(saveAndFlush.getId(), saveAndFlush);
 	            return saveAndFlush;
 	        }
@@ -98,7 +104,7 @@ public class ArticleServiceImpl implements ArticleService{
 	        cache.put(id, map);
 	    }
 	    
-	    return (List<Article>) cache.get(id).values();
+	    return (List<Article>) CollectionUtils.arrayToList(cache.get(id).values().toArray());
 	}
 
     @Override
@@ -108,7 +114,7 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public List<Article> getMostPopularArticles() {
-        PageRequest pr = new PageRequest(1, 10, Direction.DESC, "viewCount");
+        PageRequest pr = new PageRequest(0, 10, Direction.DESC, "viewCount");
         Page<Article> findAll = articleRepository.findAll(pr);
         List<Article> resultSet = new ArrayList<Article>();
         if(findAll != null) {
@@ -119,7 +125,7 @@ public class ArticleServiceImpl implements ArticleService{
 
     @Override
     public List<Article> getMostRecentArticles() {
-        PageRequest pr = new PageRequest(1, 10, Direction.DESC, "publishDate");
+        PageRequest pr = new PageRequest(0, 10, Direction.DESC, "publishDate");
         Page<Article> findAll = articleRepository.findAll(pr);
         List<Article> resultSet = new ArrayList<Article>();
         if(findAll != null) {
